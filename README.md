@@ -11,102 +11,125 @@ pinned: false
 # Sahayak (सहायक) — Senior Life Companion 🧓🛡️
 
 > **Prompt Wars AI Hackathon Submission**  
-> An empathetic, voice-assisted, and proactive AI companion designed specifically for senior citizens. It simplifies intimidating utility bills, legal/medical documents, and alerts seniors to digital frauds, phishing, and fake disconnection scams in their native language with warm, high-contrast, large-type accessibility.
+> An empathetic, voice-assisted, proactive AI companion and digital fraud guardian designed specifically for senior citizens. It simplifies intimidating bills and documents, detects digital scam traps, and manages crucial life deadlines in simple everyday language.
 
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/Mayankphp/main_promptwars)
 [![Python](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.12-blue)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite%20%7C%20Tailwind-61dafb)](https://react.dev/)
 [![Gemini](https://img.shields.io/badge/AI%20Model-Gemini%203.5%20Flash-orange)](https://deepmind.google/technologies/gemini/)
+[![Tests](https://img.shields.io/badge/Tests-9%20Passed%20(100%25)-brightgreen)](backend/tests/test_backend.py)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
-## 🌟 The Problem Sahayak Solves
+## 1. Chosen Vertical
 
-Modern digital life is filled with rapid SMS alerts, cryptic utility bills, intimidating bureaucratic notices, and predatory digital scams. For elderly citizens, navigating small phone screens, dense legal jargon, and urgent scam messages is stressful, confusing, and financially dangerous.
-
-**Sahayak** acts as a trustworthy digital companion:
-1. **Plain Language Explainer**: Breaks down utility bills, bank statements, pension notices, and hospital slips into simple, jargon-free bullet points.
-2. **Proactive Scam Shield**: Scans messages for urgency traps, fake APKs, unverified links, and electricity disconnection threats before seniors panic or pay fraudsters.
-3. **Senior-Centric Accessibility**: High-contrast modes, large readable typography, and native text-to-speech audio playback in English, Hindi, and regional languages.
-4. **Proactive Reminders**: Automatically extracts deadlines and payment dates, prompting seniors to save them with a single click without having to fiddle with complex calendars.
+### 🎯 Vertical: Senior Citizen Digital Empowerment & Fraud Protection
+- **Target Persona:** Elderly individuals (aged 60+) who find modern digital interfaces intimidating, struggle with small fonts, dense legal/technical jargon, complex multi-step mobile apps, and are frequently targeted by urgent digital scams (fake electricity disconnections, lottery claims, KYC expiry, pension fraud).
+- **Core Objective:** Provide a warm, calm, and protective companion that bridges the digital gap without inducing panic or confusion.
 
 ---
 
-## 🚀 Live Cloud Deployment Options
+## 2. Approach and Logic
 
-Sahayak is built as a production-grade, containerized full-stack application (FastAPI ASGI server serving both the REST API and the React SPA).
+Sahayak employs a **hybrid intelligent decision-making pipeline** combining deterministic security heuristics with generative contextual reasoning:
 
-### Option 1: 1-Click Deploy on Render (Recommended)
+```
+                  ┌─────────────────────────────────────┐
+                  │       User Input / Upload / SMS     │
+                  └──────────────────┬──────────────────┘
+                                     │
+                 ┌───────────────────▼───────────────────┐
+                 │  Pre-Processing & Security Guardrails │
+                 │  • Adversarial injection detection    │
+                 │  • Sensitive data (OTP/PIN) redaction │
+                 │  • Text sanitization (XSS defense)    │
+                 └───────────────────┬───────────────────┘
+                                     │
+           ┌─────────────────────────┴─────────────────────────┐
+           │                                                   │
+┌──────────▼──────────┐                             ┌──────────▼──────────┐
+│ Offline Rule Engine │                             │  Gemini 3.5 Flash   │
+│ • Scam heuristics   │                             │ • Plain-language TLDR│
+│ • Threat detection  │                             │ • Key actions list  │
+│ • Safe action steps │                             │ • Deadline extraction│
+└──────────┬──────────┘                             └──────────┬──────────┘
+           │                                                   │
+           └─────────────────────────┬─────────────────────────┘
+                                     │
+                 ┌───────────────────▼───────────────────┐
+                 │  Contextual Logic & Decision Matrix   │
+                 │  • Risk Level: Safe / Caution / High  │
+                 │  • Proactive Prompt & 1-Click Reminder│
+                 │  • Voice Synthesis & Senior Font Feed │
+                 └───────────────────────────────────────┘
+```
 
-1. Fork or import [`Mayankphp/main_promptwars`](https://github.com/Mayankphp/main_promptwars.git) to your GitHub.
-2. Go to [Render.com](https://dashboard.render.com/) and click **New + > Web Service**.
-3. Connect your repository `main_promptwars`.
-4. Render will auto-detect the `render.yaml` / `Dockerfile`:
-   - **Environment:** Docker
-   - **Plan:** Free
-5. In **Environment Variables**, add:
+### Logical Decision Rules:
+1. **Safety Risk Evaluation:**
+   - Detects scam signatures (e.g. urgent threats like *"disconnected tonight"*, suspicious shortlinks `bit.ly`, APK download prompts, unauthorized bank transfer requests).
+   - If a threat is detected, flags the risk as **`caution`** or **`high_risk`**, displays clear red flags in large friendly badges, and prescribes concrete protective steps (e.g., *"Do not click links"*, *"Call official helpline"*).
+2. **Context-Aware Simplification:**
+   - Rewrites complex legal or bureaucratic notices into an empathetic, 5th-grade reading level in English or Hindi.
+   - Summarizes documents into 3 key questions: *What is this?*, *How much do I pay?*, and *When is the deadline?*.
+3. **Proactive Deadline Nudge:**
+   - When a due date or scheduled action is recognized in the text (e.g. *"Bill due 25 Sept"*), the assistant does not wait for user prompting—it proactively suggests saving a reminder with a single click.
+
+---
+
+## 3. How the Solution Works
+
+### Step-by-Step User Journey:
+1. **Document / Message Ingestion:**
+   - The senior or caregiver pastes an SMS, bill text, notice, or uploads a document/image.
+   - Built-in sample scenarios (Electricity Bill, Pension Slip, Scam Alert, Medicine Refill) allow instant testing.
+2. **Live AI Analysis:**
+   - FastAPI invokes Gemini 3.5 Flash with structured JSON schemas and strict system prompts tuned for empathetic senior communication.
+3. **Empathetic Multilingual Audio:**
+   - Integrated browser Web Speech synthesis reads the simplified explanation aloud at a comfortable, calm pace (0.82x speed).
+4. **One-Click Reminder Integration:**
+   - Identified deadlines can be saved into an SQLite-backed reminder ledger with a single tap, toggleable upon completion.
+5. **Senior Accessibility Controls:**
+   - Instant toggle for high-contrast colors and extra-large readable fonts across the entire interface.
+
+---
+
+## 4. Assumptions Made
+
+1. **User Trust & Anxiety Sensitivity:** Seniors feel heightened anxiety when receiving urgent messages; therefore, the tone must always be calming, reassuring, and never alarmist.
+2. **Connectivity & Graceful Degradation:** When Gemini API latency occurs or internet connection is poor, local rule-based safety heuristics ensure immediate scam detection without failure.
+3. **Privacy First (Zero Credential Retention):** No OTPs, passwords, or personal banking credentials are saved to database or sent into logs.
+4. **Device Independence:** Seniors frequently use different devices (tablets, budget smartphones, family laptops); thus, the interface is fully responsive and requires no app-store installation.
+
+---
+
+## 5. Evaluation Alignment Matrix
+
+| Evaluation Criteria | Implementation in Sahayak | Code References |
+|---|---|---|
+| **Code Quality** *(High Impact)* | Modular architecture, Pydantic schemas, typed responses (`ApiResponse[T]`), reusable React components. | [`backend/app/main.py`](backend/app/main.py), [`backend/app/schemas/`](backend/app/schemas/) |
+| **Security** *(High Impact)* | Prompt injection defenses, OTP/PIN redaction, input sanitization, safe error handlers (no leaked traces). | [`backend/app/core/security.py`](backend/app/core/security.py) |
+| **Efficiency** *(Medium Impact)* | Async endpoints (`aiosqlite`, `httpx`), multi-stage Docker build, total repo size < 1MB, zero heavy dependencies. | [`Dockerfile`](Dockerfile), [`requirements.txt`](backend/requirements.txt) |
+| **Testing** *(Medium Impact)* | 9 automated unit/integration tests with 100% pass rate covering security, heuristics, and SPA routing. | [`backend/tests/test_backend.py`](backend/tests/test_backend.py) |
+| **Accessibility** *(High Impact)* | Senior Mode with large typography, high contrast, Web Speech text-to-speech audio in English & Hindi. | [`frontend/src/context/AccessibilityContext.jsx`](frontend/src/context/AccessibilityContext.jsx) |
+
+---
+
+## 6. Live Cloud Deployment Options
+
+Sahayak is built as a unified full-stack application (FastAPI ASGI server serving the React SPA and API on a single port).
+
+### Deploy in 2 Minutes on Render:
+1. Go to [Render.com](https://dashboard.render.com/) and click **New + > Blueprint** (or **Web Service** with Docker).
+2. Connect [`Mayankphp/main_promptwars`](https://github.com/Mayankphp/main_promptwars).
+3. Add environment variable:
    - `GEMINI_API_KEY`: *Your Google Gemini API Key*
-6. Click **Create Web Service**. Your live HTTPS URL (e.g. `https://sahayak-companion.onrender.com`) will be online in ~2 minutes!
+4. Click **Apply / Create Web Service**. Render builds the multi-stage Dockerfile and deploys live with an SSL HTTPS URL!
 
 ---
 
-### Option 2: 1-Click Deploy on Railway
+## 7. Local Development Setup
 
-1. Go to [Railway.app](https://railway.app/).
-2. Click **New Project** -> **Deploy from GitHub repo**.
-3. Select `Mayankphp/main_promptwars`.
-4. Go to **Variables** and add `GEMINI_API_KEY`.
-5. Railway automatically builds the multi-stage Dockerfile and generates a public domain under Settings -> Networking.
-
----
-
-### Option 3: Hugging Face Spaces
-
-1. Create a new Space on [Hugging Face Spaces](https://huggingface.co/spaces).
-2. Choose **Docker** as the Space SDK.
-3. Push or connect this repository.
-4. Add your `GEMINI_API_KEY` under Space Settings -> Variables and Secrets.
-
----
-
-## 🛠️ Architecture & Tech Stack
-
-```
-┌────────────────────────────────────────────────────────┐
-│                   React 18 SPA (Vite)                  │
-│   • Senior Accessibility System (Font scaling, Contrast)│
-│   • Text-to-Speech Voice Engine (Multilingual)         │
-│   • Document Upload & OCR Text Extractor               │
-│   • Proactive Action Cards & One-Click Reminders       │
-└───────────────────────────┬────────────────────────────┘
-                            │ HTTPS / REST
-┌───────────────────────────▼────────────────────────────┐
-│                  FastAPI Backend Server                │
-│   • Multi-layer Security (Input Sanitization, Defenses)│
-│   • Scam Detection Heuristics & Verification Engine    │
-│   • SQLite + aiosqlite Async Deadline Database         │
-│   • Unified Static SPA Asset Serving                   │
-└───────────────────────────┬────────────────────────────┘
-                            │
-┌───────────────────────────▼────────────────────────────┐
-│               Google Gemini 3.5 Flash                  │
-│   • Structured Output & Reasoning Analysis             │
-│   • Empathetic, Calm Senior Tone Transformation        │
-└────────────────────────────────────────────────────────┘
-```
-
----
-
-## 💻 Local Development Setup
-
-To run Sahayak locally on your machine:
-
-### Prerequisites
-- Python 3.12+
-- Node.js 18+
-
-### Quick Start (Single Script)
 ```bash
 # Clone the repository
 git clone https://github.com/Mayankphp/main_promptwars.git
@@ -125,16 +148,7 @@ cp backend/.env.example backend/.env
 
 ---
 
-## 🛡️ Trust, Privacy & Safety Measures
-
-- **No Plaintext Credential Exposure:** OTPs, PINs, passwords, and sensitive account tokens are stripped before logging.
-- **Strict Content Sanitization:** Untrusted inputs from SMS, bills, or OCR uploads are sanitized against HTML/XSS and adversarial prompt injection.
-- **Empathetic Assurance:** Output messaging is specially tuned to reassure seniors rather than induce anxiety.
-- **Fail-Safe Fallbacks:** Offline heuristic scanners continue detecting scam signatures even if network connectivity is intermittent.
-
----
-
-## 🧪 Test Suite
+## 8. Test Suite Verification
 
 Run backend unit and integration tests:
 ```bash
@@ -142,7 +156,7 @@ cd backend
 source venv/bin/activate
 pytest tests/
 ```
-All 9 test suites validate security guardrails, scam heuristics, reminder CRUD, and SPA fallback routing.
+All 9 test suites pass 100%.
 
 ---
 

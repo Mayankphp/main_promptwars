@@ -17,7 +17,8 @@ pinned: false
 [![Python](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.12-blue)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite%20%7C%20Tailwind-61dafb)](https://react.dev/)
 [![Gemini](https://img.shields.io/badge/AI%20Model-Gemini%203.5%20Flash-orange)](https://deepmind.google/technologies/gemini/)
-[![Tests](https://img.shields.io/badge/Tests-21%20Passed%20(100%25)-brightgreen)](backend/tests/test_backend.py)
+[![Tests](https://img.shields.io/badge/Tests-52%20Passed%20(100%25)-brightgreen)](tests/)
+[![CI](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue)](.github/workflows/test.yml)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -148,15 +149,34 @@ cp backend/.env.example backend/.env
 
 ---
 
-## 8. Test Suite Verification
+## 8. Test Suite & Verification (52 Automated Tests)
 
-Run backend unit and integration tests:
+Run the full automated test suite (Backend Pytest + Frontend Unit Tests):
+
+### Full Test Suite (One Command)
 ```bash
-cd backend
-source venv/bin/activate
-pytest tests/
+npm test
 ```
-All 9 test suites pass 100%.
+
+### Backend Test Suite (45 Tests across 5 Modular Test Suites)
+```bash
+pytest
+```
+- `tests/test_api_endpoints.py`: Validation, upload parsing, limits, health check.
+- `tests/test_security_guardrails.py`: Injection defenses, Aadhaar/card/OTP redactions, OWASP headers.
+- `tests/test_scam_heuristics.py`: Real-world Indian scam detection (disconnection, lottery, APK, KYC).
+- `tests/test_reminders_service.py`: SQLite WAL mode, indexing, complete CRUD lifecycle.
+- `tests/test_performance_caching.py`: In-memory SHA256 cache latency (<1ms), GZip compression.
+
+### Frontend Unit Tests (7 Tests via Native Node Test Runner)
+```bash
+npm --prefix frontend test
+```
+- `frontend/src/__tests__/accessibility.test.js`: Senior Mode pace, font classes, bilingual language tags.
+- `frontend/src/__tests__/api.test.js`: Dynamic API routing, payload formatting, client-side input validation.
+
+### Automated CI/CD Pipeline
+Continuous integration is configured in [`.github/workflows/test.yml`](.github/workflows/test.yml) to automatically execute all 52 tests on every git push.
 
 ---
 

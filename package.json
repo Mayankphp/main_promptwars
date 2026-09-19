@@ -5,7 +5,9 @@
   "description": "Sahayak: Senior Life Companion - Prompt Wars Submission",
   "scripts": {
     "build": "npm --prefix frontend install && npm --prefix frontend run build",
-    "test": "pytest",
+    "test": "pytest && npm --prefix frontend test",
+    "test:backend": "pytest",
+    "test:frontend": "npm --prefix frontend test",
     "start": "python main.py"
   }
 }

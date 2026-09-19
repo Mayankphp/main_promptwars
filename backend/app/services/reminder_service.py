@@ -18,6 +18,8 @@ async def ensure_db():
 async def init_db():
     """Initialize SQLite database and create reminders table if not exists."""
     async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("PRAGMA journal_mode=WAL;")
+        await db.execute("PRAGMA synchronous=NORMAL;")
         await db.execute("""
             CREATE TABLE IF NOT EXISTS reminders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,6 +33,8 @@ async def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        await db.execute("CREATE INDEX IF NOT EXISTS idx_reminders_due_date ON reminders(due_date);")
+        await db.execute("CREATE INDEX IF NOT EXISTS idx_reminders_is_completed ON reminders(is_completed);")
         await db.commit()
 
         # Seed initial realistic reminders if empty

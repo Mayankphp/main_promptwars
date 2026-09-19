@@ -6,19 +6,23 @@ from typing import Tuple
 SENSITIVE_PATTERNS = [
     (re.compile(r'\b\d{6}\b'), '[REDACTED_OTP_OR_PIN]'),
     (re.compile(r'\b(?:\d[ -]*?){13,16}\b'), '[REDACTED_CARD_NUMBER]'),
+    (re.compile(r'\b\d{4}\s\d{4}\s\d{4}\b'), '[REDACTED_AADHAAR_NUMBER]'),
     (re.compile(r'(?i)(?:password|passwd|pwd)[\s:=]+([^\s,;]+)'), r'password=[REDACTED]'),
     (re.compile(r'(?i)(?:cvv|cvc)[\s:=]+(\d{3,4})'), r'cvv=[REDACTED]'),
     (re.compile(r'(?i)AIza[0-9A-Za-z-_]{35}'), '[REDACTED_API_KEY]'),
 ]
 
-# Common prompt injection patterns
+# Common prompt injection and jailbreak patterns
 INJECTION_SIGNALS = [
     r"ignore (all )?(previous|above) instructions",
     r"disregard (all )?(previous|system) (prompts|instructions)",
     r"reveal (the |your )?(system|internal) (prompt|instructions)",
     r"you are now a|you are now DAN|jailbreak",
-    r"system override|mode switch",
+    r"system override|mode switch|developer mode",
     r"print all instructions above",
+    r"bypass (safety|security|content) (filters|guidelines)",
+    r"pretend you have no rules|act as an unrestricted AI",
+    r"repeat the text above|repeat your instructions",
 ]
 INJECTION_REGEX = re.compile("|".join(INJECTION_SIGNALS), re.IGNORECASE)
 

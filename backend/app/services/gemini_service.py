@@ -88,11 +88,20 @@ You must output a single valid JSON object strictly matching this schema:
 }
 """
 
+import hashlib
+import time
+import asyncio
+
 class GeminiService:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
         self.model = settings.GEMINI_MODEL
         self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
+        # High-efficiency in-memory TTL/LRU cache for instant responses
+        self._cache: Dict[str, Tuple[float, AnalysisResponse]] = {}
+        self._cache_ttl = 3600  # 1 hour TTL
+        self._max_cache_entries = 500
+        self._semaphore = asyncio.Semaphore(15)
 
     async def analyze_content(
         self,
@@ -101,15 +110,26 @@ class GeminiService:
         task_context: Optional[str] = None
     ) -> AnalysisResponse:
         """
-        Analyze content using Gemini 3.5 Flash with fallback to local heuristic engine.
+        Analyze content using Gemini 3.5 Flash with fallback to local heuristic engine
+        and high-speed caching for maximum efficiency.
         """
+        # Cache check for sub-millisecond repeated query responses
+        cache_key = hashlib.sha256(f"{content.strip()}_{language}_{task_context}".encode()).hexdigest()
+        now = time.time()
+        if cache_key in self._cache:
+            timestamp, cached_res = self._cache[cache_key]
+            if now - timestamp < self._cache_ttl:
+                return cached_res
+
         # Run local heuristic safety check first for defense-in-depth
         local_risk, local_flags, local_safe_steps = analyze_safety_heuristics(content)
         is_injection, injection_msg = detect_potential_prompt_injection(content)
 
         # If API key is not configured, gracefully use the heuristic fallback
         if not self.api_key:
-            return self._heuristic_fallback(content, local_risk, local_flags, local_safe_steps)
+            res = self._heuristic_fallback(content, local_risk, local_flags, local_safe_steps)
+            self._save_cache(cache_key, res)
+            return res
 
         wrapped_prompt = wrap_untrusted_content_for_prompt(content)
         user_message = f"""
@@ -138,34 +158,46 @@ Task Intent: {task_context or 'General Explanation & Safety Check'}
         }
 
         try:
-            async with httpx.AsyncClient(timeout=12.0) as client:
-                response = await client.post(
-                    self.api_url,
-                    json=payload,
-                    headers={"Content-Type": "application/json"}
-                )
+            async with self._semaphore:
+                async with httpx.AsyncClient(timeout=12.0) as client:
+                    response = await client.post(
+                        self.api_url,
+                        json=payload,
+                        headers={"Content-Type": "application/json"}
+                    )
 
-                if response.status_code == 200:
-                    res_json = response.json()
-                    raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                    data = json.loads(raw_text)
+                    if response.status_code == 200:
+                        res_json = response.json()
+                        raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                        data = json.loads(raw_text)
 
-                    # Augment with local high-confidence safety flags if model missed any
-                    if local_flags and not data.get("warnings"):
-                        data["warnings"] = [f.model_dump() for f in local_flags]
-                        if data.get("risk_level") == "safe":
-                            data["risk_level"] = local_risk
+                        # Augment with local high-confidence safety flags if model missed any
+                        if local_flags and not data.get("warnings"):
+                            data["warnings"] = [f.model_dump() for f in local_flags]
+                            if data.get("risk_level") == "safe":
+                                data["risk_level"] = local_risk
 
-                    # Validate with Pydantic
-                    parsed = AnalysisResponse(**data)
-                    return parsed
-                else:
-                    # Non-200 status from Gemini API -> use safe fallback
-                    return self._heuristic_fallback(content, local_risk, local_flags, local_safe_steps)
+                        # Validate with Pydantic
+                        parsed = AnalysisResponse(**data)
+                        self._save_cache(cache_key, parsed)
+                        return parsed
+                    else:
+                        # Non-200 status from Gemini API -> use safe fallback
+                        fallback_res = self._heuristic_fallback(content, local_risk, local_flags, local_safe_steps)
+                        self._save_cache(cache_key, fallback_res)
+                        return fallback_res
 
-        except Exception as e:
+        except Exception:
             # Network error or timeout -> use safe fallback
-            return self._heuristic_fallback(content, local_risk, local_flags, local_safe_steps)
+            fallback_res = self._heuristic_fallback(content, local_risk, local_flags, local_safe_steps)
+            self._save_cache(cache_key, fallback_res)
+            return fallback_res
+
+    def _save_cache(self, key: str, value: AnalysisResponse):
+        if len(self._cache) >= self._max_cache_entries:
+            oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k][0])
+            self._cache.pop(oldest_key, None)
+        self._cache[key] = (time.time(), value)
 
     def _heuristic_fallback(
         self,

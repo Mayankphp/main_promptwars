@@ -37,6 +37,55 @@ import os
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
+import time
+from collections import defaultdict
+from fastapi.middleware.gzip import GZipMiddleware
+
+# Sliding window rate limiter (120 reqs / min per client IP)
+_client_requests = defaultdict(list)
+RATE_LIMIT_WINDOW = 60.0
+RATE_LIMIT_MAX_REQUESTS = 120
+
+@app.middleware("http")
+async def security_and_rate_limit_middleware(request: Request, call_next):
+    # 1. Rate Limiting Check on API endpoints to prevent abuse & denial of service
+    if request.url.path.startswith("/api/"):
+        client_ip = request.client.host if request.client else "127.0.0.1"
+        now = time.time()
+        timestamps = [ts for ts in _client_requests[client_ip] if now - ts < RATE_LIMIT_WINDOW]
+        _client_requests[client_ip] = timestamps
+        if len(timestamps) >= RATE_LIMIT_MAX_REQUESTS:
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "success": False,
+                    "data": None,
+                    "error": "Too many requests. Please slow down and try again in a moment."
+                }
+            )
+        _client_requests[client_ip].append(now)
+
+    response = await call_next(request)
+
+    # 2. OWASP Recommended Security Headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+
+    # 3. High-Efficiency Cache Control Headers
+    if request.url.path.startswith("/assets/"):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    elif request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+
+    return response
+
+# High-efficiency GZip compression for responses > 500 bytes
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
 # Strict CORS configuration
 is_wildcard = "*" in settings.cors_origins_list
 app.add_middleware(
@@ -63,7 +112,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.warning(f"Validation error on {request.url.path}: {exc.errors()[:2]}")
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=422,
         content={
             "success": False,
             "data": None,

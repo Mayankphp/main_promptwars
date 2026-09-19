@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --app-font-size: 16px;
+    --app-line-height: 1.5;
+  }
+
+  html {
+    font-size: var(--app-font-size);
+    line-height: var(--app-line-height);
+    background-color: #0e1217;
+    color: #e2e8f0;
+  }
+
+  body {
+    background-color: #0e1217;
+    color: #e2e8f0;
+  }
+
+  /* Senior Mode: Larger readable text, extra contrast */
+  html.senior-mode {
+    --app-font-size: 20px;
+    --app-line-height: 1.7;
+  }
+
+  html.senior-mode .senior-scale-up {
+    font-size: 1.15em;
+  }
+
+  /* High-visibility focus rings */
+  *:focus-visible {
+    outline: 2px solid #d97706 !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0e1217;
+}
+::-webkit-scrollbar-thumb {
+  background: #252f3e;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333f52;
+}
+
+.tactile-btn {
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+}
+.tactile-btn:active {
+  transform: scale(0.98);
+}

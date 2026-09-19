@@ -1,0 +1,11 @@
+{
+  "name": "sahayak-companion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sahayak: Senior Life Companion - Prompt Wars Submission",
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
+    "test": "pytest",
+    "start": "python main.py"
+  }
+}

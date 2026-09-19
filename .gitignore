@@ -11,7 +11,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -37,6 +36,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 dist/
+!frontend/dist/
+!frontend/dist/**
 dist-ssr/
 *.local
 
